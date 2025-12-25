@@ -1,3 +1,4 @@
+// app/search/SearchClient.js
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
@@ -12,7 +13,7 @@ export default function SearchClient({ q, tag, page, data }) {
   const [isFree, setIsFree] = useState(false);
   const [sort, setSort] = useState("rating"); // "rating" | "newest"
 
-  // When the user does a NEW SEARCH (q/tag changes), reset client filters
+  // Reset client-only filters when the user runs a new search (q/tag changes)
   useEffect(() => {
     setIsFree(false);
     setSort("rating");
@@ -21,33 +22,28 @@ export default function SearchClient({ q, tag, page, data }) {
   const filteredItems = useMemo(() => {
     let items = serverItems;
 
-    // 1) client-side filter: free only
+    // Client-side filter: Free only
     if (isFree) {
-      items = items.filter((t) => t?.has_free_ver === true);
-      // If your backend doesn't provide has_free_ver on each item, you must compute it in backend
-      // or include pricing field and compute here.
+      items = items.filter((t) => t?.is_free === true);
     }
 
-    // 2) client-side sort
+    // Client-side sort
     items = [...items];
     if (sort === "newest") {
-      // assuming you have created_at or published_at or something sortable
-      // if you don't, either add it in backend or remove this sort option
       items.sort((a, b) => {
         const ta = new Date(a?.created_at || 0).getTime();
         const tb = new Date(b?.created_at || 0).getTime();
         return tb - ta;
       });
     } else {
-      // rating desc
-      items.sort((a, b) => (Number(b?.rating || 0) - Number(a?.rating || 0)));
+      items.sort((a, b) => Number(b?.rating || 0) - Number(a?.rating || 0));
     }
 
     return items;
   }, [serverItems, isFree, sort]);
 
   return (
-    <div style={{ minHeight: "100vh", backgroundColor: "#fff" }}>
+    <div style={{ minHeight: "100vh", backgroundColor: "#fff", display: "flex", flexDirection: "column" }}>
       {/* Sticky Top Header with Search & Filters */}
       <div
         style={{
@@ -63,7 +59,6 @@ export default function SearchClient({ q, tag, page, data }) {
           <SearchControls
             q={q}
             tag={tag}
-            // client-state controlled
             sort={sort}
             isFree={isFree}
             onChangeSort={setSort}
@@ -73,7 +68,8 @@ export default function SearchClient({ q, tag, page, data }) {
         </div>
       </div>
 
-      <main style={{ maxWidth: 1000, margin: "0 auto", padding: "40px 20px" }}>
+      {/* Content */}
+      <main style={{ maxWidth: 1000, margin: "0 auto", padding: "40px 20px", width: "100%", flex: "1 1 auto" }}>
         <div
           style={{
             marginBottom: 24,
@@ -84,16 +80,14 @@ export default function SearchClient({ q, tag, page, data }) {
         >
           <h2 style={{ fontSize: 18, fontWeight: "600", margin: 0 }}>
             Results{" "}
-            <span
-              style={{
-                color: "#9ca3af",
-                fontWeight: "400",
-                marginLeft: 8,
-              }}
-            >
+            <span style={{ color: "#9ca3af", fontWeight: "400", marginLeft: 8 }}>
               ({filteredItems.length} shown / {serverTotal} total)
             </span>
           </h2>
+
+          <div style={{ fontSize: 13, color: "#6b7280" }}>
+            Sorted by <span style={{ fontWeight: 600, color: "#111827" }}>{sort}</span>
+          </div>
         </div>
 
         <section
@@ -109,19 +103,57 @@ export default function SearchClient({ q, tag, page, data }) {
         </section>
 
         {filteredItems.length === 0 && (
-          <div
-            style={{
-              textAlign: "center",
-              padding: "100px 0",
-              color: "#6b7280",
-            }}
-          >
-            <p style={{ fontSize: 18 }}>
-              No tools found. Try adjusting your filters.
-            </p>
+          <div style={{ textAlign: "center", padding: "100px 0", color: "#6b7280" }}>
+            <p style={{ fontSize: 18 }}>No tools found. Try adjusting your filters.</p>
           </div>
         )}
       </main>
+
+      {/* Footer with Developer entrance */}
+      <footer
+        style={{
+          borderTop: "1px solid #eee",
+          padding: "18px 20px",
+          background: "#fff",
+        }}
+      >
+        <div
+          style={{
+            maxWidth: 1000,
+            margin: "0 auto",
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
+            gap: 12,
+            flexWrap: "wrap",
+          }}
+        >
+          <div style={{ fontSize: 13, color: "#6b7280" }}>
+            AI Tools Catalog
+            <span style={{ margin: "0 8px", color: "#d1d5db" }}>·</span>
+            Browse, filter, and compare tools
+          </div>
+
+          <a
+            href="/dev"
+            style={{
+              fontSize: 13,
+              color: "#6b7280",
+              textDecoration: "none",
+              display: "inline-flex",
+              alignItems: "center",
+              gap: 8,
+              padding: "6px 10px",
+              borderRadius: 10,
+              border: "1px solid #e5e7eb",
+            }}
+            title="Developer console"
+          >
+            <span aria-hidden="true" style={{ fontSize: 15 }}>⚙︎</span>
+            Developer
+          </a>
+        </div>
+      </footer>
     </div>
   );
 }
