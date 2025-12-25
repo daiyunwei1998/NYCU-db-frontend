@@ -1,6 +1,32 @@
 // components/ToolCard.js
 import Link from "next/link";
 
+function buildSearchHref({ tag, q }) {
+  const params = new URLSearchParams();
+  if (q) params.set("q", q);
+  if (tag) params.set("tag", tag);
+  // page resets automatically because we don't include it
+  return `/search?${params.toString()}`;
+}
+
+function PillLink({ href, children, style }) {
+  return (
+    <Link
+      href={href}
+      style={{
+        display: "inline-flex",
+        alignItems: "center",
+        gap: 6,
+        textDecoration: "none",
+        cursor: "pointer",
+        ...style,
+      }}
+    >
+      {children}
+    </Link>
+  );
+}
+
 export default function ToolCard({ tool }) {
   const tags = Array.isArray(tool.tags) ? tool.tags : [];
   const topTags = tags.slice(0, 6);
@@ -103,9 +129,11 @@ export default function ToolCard({ tool }) {
           </p>
         ) : null}
 
+        {/* Clickable Pills */}
         <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
           {tool.primary_task_name ? (
-            <span
+            <PillLink
+              href={buildSearchHref({ tag: tool.primary_task_name })}
               style={{
                 fontSize: 12,
                 padding: "3px 8px",
@@ -113,14 +141,16 @@ export default function ToolCard({ tool }) {
                 background: "#f3f4f6",
                 color: "#111827",
               }}
+              title={`Filter by ${tool.primary_task_name}`}
             >
               {tool.primary_task_name}
-            </span>
+            </PillLink>
           ) : null}
 
           {topTags.map((t) => (
-            <span
+            <PillLink
               key={t}
+              href={buildSearchHref({ tag: t })}
               style={{
                 fontSize: 12,
                 padding: "3px 8px",
@@ -128,9 +158,10 @@ export default function ToolCard({ tool }) {
                 border: "1px solid #e5e7eb",
                 color: "#374151",
               }}
+              title={`Filter by ${t}`}
             >
               {t}
-            </span>
+            </PillLink>
           ))}
         </div>
 
