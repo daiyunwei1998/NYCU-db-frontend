@@ -1,7 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import { updateTool, deleteTool } from "../../../lib/api";
+import { updateTool, deleteTool } from "../../../../lib/api";
+
 
 export default function EditTool({ params }) {
   const [form, setForm] = useState({
