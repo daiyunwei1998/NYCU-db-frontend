@@ -1,66 +1,58 @@
-import Image from "next/image";
-import styles from "./page.module.css";
+import { listTags } from "../lib/api";
+import FilterBar from "./components/FilterBar";
+import { Suspense } from "react";
 
-export default function Home() {
+export default async function IndexPage() {
+  const tagsData = await listTags().catch(() => ({ items: [] }));
+  
+  // 1. Filter out tags that only have 1 item (noise reduction)
+  // 2. Take the top 15 most frequent tags
+  const popularTags = tagsData.items
+    .filter(t => t.count > 1) 
+    .slice(0, 15);
+
   return (
-    <div className={styles.page}>
-      <main className={styles.main}>
-        <Image
-          className={styles.logo}
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className={styles.intro}>
-          <h1>To get started, edit the page.js file.</h1>
-          <p>
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
+    <main style={{ 
+      minHeight: "100vh", 
+      display: "flex", 
+      flexDirection: "column", 
+      alignItems: "center", 
+      justifyContent: "center",
+      padding: "20px",
+      background: "#ffffff"
+    }}>
+      <div style={{ textAlign: "center", width: "100%", maxWidth: 750 }}>
+        {/* Branding */}
+        <div style={{ 
+          display: "inline-block", 
+          padding: "8px 16px", 
+          borderRadius: 100, 
+          backgroundColor: "#eff6ff", 
+          color: "#3b82f6", 
+          fontSize: 14, 
+          fontWeight: 600,
+          marginBottom: 24
+        }}>
+          Now indexing 500+ AI tools
         </div>
-        <div className={styles.ctas}>
-          <a
-            className={styles.primary}
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className={styles.logo}
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className={styles.secondary}
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
+
+        <h1 style={{ fontSize: "clamp(40px, 8vw, 64px)", fontWeight: 900, marginBottom: 16, letterSpacing: "-0.04em" }}>
+          Build with Intelligence.
+        </h1>
+        
+        <p style={{ fontSize: 20, color: "#6b7280", marginBottom: 48, lineHeight: 1.5 }}>
+          Search the directory for tasks like <span style={{ color: "#111827", fontWeight: 500 }}>"Video Editing"</span> or <span style={{ color: "#111827", fontWeight: 500 }}>"Code Generation."</span>
+        </p>
+
+        <Suspense fallback={<div>Loading Search...</div>}>
+          <FilterBar availableTags={popularTags} isHome={true} />
+        </Suspense>
+
+        {/* Optional: Add a "trending" label */}
+        <div style={{ marginTop: 24, fontSize: 13, color: "#9ca3af", fontWeight: 500, textTransform: "uppercase", letterSpacing: "0.05em" }}>
+          Trending Categories
         </div>
-      </main>
-    </div>
+      </div>
+    </main>
   );
 }
